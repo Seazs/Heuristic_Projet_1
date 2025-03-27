@@ -32,8 +32,8 @@ public:
     std::vector<Job> jobs;
     std::vector<Machine> machines;
     std::vector<std::vector<int>> makespanTable;
-    int numMachines;
-    int numJobs;
+    unsigned int numMachines;
+    unsigned int numJobs;
 
 private:
     

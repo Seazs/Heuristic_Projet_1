@@ -10,6 +10,8 @@
 #include <random>
 #include <algorithm>
 
+#define INT_MAX 2147483647
+
 
 
     PFSP::PFSP(const char filename[]){

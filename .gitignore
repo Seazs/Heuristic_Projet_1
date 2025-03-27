@@ -2,3 +2,6 @@
 
 // ignore Heuristic_PFSP file
 Heuristic_PFSP
+
+// ignore build folder
+build
