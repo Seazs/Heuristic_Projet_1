@@ -5,11 +5,42 @@
 
 
 
-// Function declarations for the algorithm
-void exampleAlgorithm(int n);
-void benchmarkAlgorithm();
 
-int computeMakespan(const std::vector<std::vector<int>>& processingTimes, const std::vector<int>& jobOrder);
-int computeTotalFlowtime(const std::vector<std::vector<int>>& processingTimes, const std::vector<int>& jobOrder);   
+struct Job {
+    int id;
+    std::vector<int> processingTimes;
+};
 
-#endif // ALGORITHM_H
+struct Machine {
+    std::vector<int> jobOrder;
+    int currentTime;
+};
+
+class PFSP {
+public:
+    PFSP(const char filename[]);
+    void benchmarkAlgorithm();
+    int getMakespan(std::vector<int> jobsOrder);
+    std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
+    int computeTotalFlowtime();
+    void importData(const char filename[]);
+
+    // initial solution generation
+    std::vector<int> generateRandomSolution();
+    std::vector<int> simplifiedRZHeuristic();
+
+    std::vector<Job> jobs;
+    std::vector<Machine> machines;
+    std::vector<std::vector<int>> makespanTable;
+    int numMachines;
+    int numJobs;
+
+private:
+    
+
+    int makespan;
+    int totalFlowtime;
+};
+
+
+#endif

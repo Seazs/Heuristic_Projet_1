@@ -1,2 +1,4 @@
 .vscode
-./Heuristic_PFSP
+
+// ignore Heuristic_PFSP file
+Heuristic_PFSP

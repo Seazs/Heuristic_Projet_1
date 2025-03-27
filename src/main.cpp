@@ -1,53 +1,42 @@
 #include <iostream>
 #include "algorithm.h"
+#include <algorithm>
 
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <numeric>
+#include <random>
+
 
 using namespace std;
 
-std::vector<std::vector<int>> importData(const char filename[]);
 
 
 int main() {
-    // Initialize the algorithm
-    std::cout << "Starting algorithm benchmarking..." << std::endl;
+    PFSP pfsp("./data/Benchmarks/ta01");
+    // std::vector<int> jobsOrder(50);
+    // std::iota(jobsOrder.begin(), jobsOrder.end(), 0); // Fill with 0 to 49
+    // std::random_device rd;
+    // std::mt19937 g(rd());
+    // std::shuffle(jobsOrder.begin(), jobsOrder.end(), g); // Shuffle to create a random permutation
 
-    // Import the data
-    std::vector<std::vector<int>> processingTimes = importData("./res/Benchmarks/ta052");
+    std::vector<int> jobsOrder = {0, 1, 2, 3, 4, 5};
 
-    // Call the algorithm function
-    std::cout << "Benchmarking completed." << std::endl;
+    pfsp.makespanTable = pfsp.computeMakespanTable(jobsOrder);
 
-    int size = sizeof(int);
-    std::cout << "Size of int: " << size << std::endl;
+    for(int i = 0; i < pfsp.numMachines; i++){
+        for(int j = 0; j < pfsp.numJobs; j++){
+            cout << pfsp.makespanTable[j][i] << " ";
+        }
+        cout << endl;
+    }
+
     return 0;
 }
 
 
-std::vector<std::vector<int>> importData(const char filename[]) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        return {};
-    }
 
-    int numJobs, numMachines;
-    file >> numJobs >> numMachines;
-
-    std::vector<std::vector<int>> processingTimes(numJobs, std::vector<int>(numMachines));
-    int machine_nbr;
-    for (int j = 0; j < numJobs; ++j) {
-        for (int i = 0; i < numMachines; ++i) {
-            file >> machine_nbr;
-            file >> processingTimes[j][i];
-        }
-    }
-
-    file.close();
-    return processingTimes;
-}
 
