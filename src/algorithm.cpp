@@ -49,23 +49,24 @@
     std::vector<std::vector<int>> PFSP::computeMakespanTable(std::vector<int> jobsOrder){
 
         // check that the jobsorder has the right size and contain all the jobs only once
-        if (jobsOrder.size() != this->numJobs) {
-            std::cerr << "Jobs order size is not equal to the number of jobs." << std::endl;
-            return std::vector<std::vector<int>>();
-        }
-        std::vector<int> jobsOrderCopy = jobsOrder;
-        std::sort(jobsOrderCopy.begin(), jobsOrderCopy.end());
-        for (int i = 0; i < this->numJobs; ++i) {
-            if (jobsOrderCopy[i] != i) {
-                std::cerr << "Jobs order does not contain all the jobs." << std::endl;
-                return std::vector<std::vector<int>>();
-            }
-        }
+        // if (jobsOrder.size() != this->numJobs) {
+        //     std::cerr << "Jobs order size (" << jobsOrder.size() << ") is not equal to the number of jobs." << std::endl;
+        //     return std::vector<std::vector<int>>();
+        // }
+        // std::vector<int> jobsOrderCopy = jobsOrder;
+        // std::sort(jobsOrderCopy.begin(), jobsOrderCopy.end());
+        // for (int i = 0; i < this->numJobs; ++i) {
+        //     if (jobsOrderCopy[i] != i) {
+        //         std::cerr << "Jobs order does not contain all the jobs." << std::endl;
+        //         return std::vector<std::vector<int>>();
+        //     }
+        // }
+
 
         std::vector<std::vector<int>> makespanTable(this->numJobs, std::vector<int>(this->numMachines, 0));
         // Initialize first machine
         makespanTable[0][0] = this->jobs[jobsOrder[0]].processingTimes[0];
-        for (int j = 1; j < this->numJobs; ++j) {
+        for (int j = 1; j < jobsOrder.size(); ++j) {
             makespanTable[j][0] = makespanTable[j-1][0] + this->jobs[jobsOrder[j]].processingTimes[0];
         }
         // Initialize first job
@@ -74,7 +75,7 @@
             makespanTable[0][i] = makespanTable[0][i-1] + this->jobs[jobsOrder[0]].processingTimes[i];
         }
         // Fill the rest of the table
-        for (int j = 1; j < this->numJobs; ++j) {
+        for (int j = 1; j < jobsOrder.size(); ++j) {
             for (int i = 1; i < this->numMachines; ++i) {
                 makespanTable[j][i] = std::max(makespanTable[j-1][i], makespanTable[j][i-1]) + this->jobs[jobsOrder[j]].processingTimes[i];
             }
@@ -109,7 +110,7 @@
             jobsSumProcessingTimes[j].second = j;
         }
         std::sort(jobsSumProcessingTimes.begin(), jobsSumProcessingTimes.end());
-
+        
         // Construct the jobs order by adding one job at a time
         for (int step = 0; step < this->numJobs; ++step) {
             int currentJob = jobsSumProcessingTimes[step].second;
@@ -117,11 +118,9 @@
             // Test all possible positions for the current job in the current jobsOrder
             std::vector<int> bestOrder;
             int bestMakespan = INT_MAX;
-
             for (size_t pos = 0; pos <= jobsOrder.size(); ++pos) {
                 std::vector<int> tempOrder = jobsOrder;
                 tempOrder.insert(tempOrder.begin() + pos, currentJob);
-
                 int currentMakespan = getMakespan(tempOrder);
                 if (currentMakespan < bestMakespan) {
                     bestMakespan = currentMakespan;
