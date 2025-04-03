@@ -1,8 +1,8 @@
-#ifndef ALGORITHM_H
-#define ALGORITHM_H
+#ifndef PFSP_H
+#define PFSP_H
 
 #include <vector>
-
+#include <string>
 
 
 
@@ -23,11 +23,27 @@ public:
     int getMakespan(std::vector<int> jobsOrder);
     std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
     int computeTotalFlowtime();
-    void importData(const char filename[]);
 
     // initial solution generation
     std::vector<int> generateRandomSolution();
     std::vector<int> simplifiedRZHeuristic();
+
+    // improvement methods
+    std::vector<int> transpose(std::vector<int> jobsOrder, int i, int j);
+    std::vector<int> exchange(std::vector<int> jobsOrder, int i, int j);
+    std::vector<int> insert(std::vector<int> jobsOrder, int i, int j);
+
+    // iterative methods
+    std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]);
+    std::vector<int> iterative_improvement_best(std::vector<int> jobsOrder, const char improvement_method[]);
+
+    // main algo method
+    std::vector<int> iterative_improvement_algorithm(std::string& improvementType, std::string& neighborhoodType, std::string& initType);
+
+
+
+    void importData(const char filename[]);
+
 
     std::vector<Job> jobs;
     std::vector<Machine> machines;
