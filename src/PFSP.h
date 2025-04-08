@@ -22,6 +22,7 @@ public:
     void benchmarkAlgorithm();
     int getMakespan(std::vector<int> jobsOrder);
     std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
+    void updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex);
     int getTotalCompletionTime(std::vector<int> jobsOrder);
 
 
@@ -41,7 +42,8 @@ public:
     // main algo method
     std::vector<int> iterative_improvement_algorithm(std::string& improvementType, std::string& neighborhoodType, std::string& initType);
 
-
+    // VND method
+    std::vector<int> variable_neighborhood_descent_first(std::vector<std::string> neighborhoodOrder);
 
     void importData(const char filename[]);
 

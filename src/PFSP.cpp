@@ -29,8 +29,8 @@
 
         file >> this->numJobs >> this->numMachines;
 
-        printf("numJobs: %d\n", this->numJobs);
-        printf("numMachines: %d\n", this->numMachines);
+        // printf("numJobs: %d\n", this->numJobs);
+        // printf("numMachines: %d\n", this->numMachines);
 
         this->jobs.resize(this->numJobs);
         this->machines.resize(this->numMachines);
@@ -67,12 +67,10 @@
         // Initialize first machine
         makespanTable[0][0] = this->jobs[jobsOrder[0]].processingTimes[0];
         for (int j = 1; j < jobsOrder.size(); ++j) {
-            makespanTable[j][0] = makespanTable[j-1][0] + this->jobs[jobsOrder[j]].processingTimes[0];
+            makespanTable[j][0] = makespanTable[j - 1][0] + this->jobs[jobsOrder[j]].processingTimes[0];
         }
-        // Initialize first job
-        makespanTable[0][0] = this->jobs[jobsOrder[0]].processingTimes[0];
         for (int i = 1; i < this->numMachines; ++i) {
-            makespanTable[0][i] = makespanTable[0][i-1] + this->jobs[jobsOrder[0]].processingTimes[i];
+            makespanTable[0][i] = makespanTable[0][i - 1] + this->jobs[jobsOrder[0]].processingTimes[i];
         }
         // Fill the rest of the table
         for (int j = 1; j < jobsOrder.size(); ++j) {
@@ -81,6 +79,23 @@
             }
         }
         return makespanTable;
+    }
+
+    void PFSP::updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex) {
+        // Update the makespan table starting from the affected job index
+        for (int j = startIndex; j < this->numJobs; ++j) {
+            for (int i = 0; i < this->numMachines; ++i) {
+                if (j == 0 && i == 0) {
+                    makespanTable[j][i] = this->jobs[jobsOrder[j]].processingTimes[i];
+                } else if (j == 0) {
+                    makespanTable[j][i] = makespanTable[j][i - 1] + this->jobs[jobsOrder[j]].processingTimes[i];
+                } else if (i == 0) {
+                    makespanTable[j][i] = makespanTable[j - 1][i] + this->jobs[jobsOrder[j]].processingTimes[i];
+                } else {
+                    makespanTable[j][i] = std::max(makespanTable[j - 1][i], makespanTable[j][i - 1]) + this->jobs[jobsOrder[j]].processingTimes[i];
+                }
+            }
+        }
     }
 
     int PFSP::getMakespan(std::vector<int> jobsOrder){
@@ -129,7 +144,7 @@
             for (size_t pos = 0; pos <= jobsOrder.size(); ++pos) {
                 std::vector<int> tempOrder = jobsOrder;
                 tempOrder.insert(tempOrder.begin() + pos, currentJob);
-                int currentMakespan = getMakespan(tempOrder);
+                int currentMakespan = getTotalCompletionTime(tempOrder);
                 if (currentMakespan < bestMakespan) {
                     bestMakespan = currentMakespan;
                     bestOrder = tempOrder;
@@ -156,80 +171,95 @@
     }
 
     std::vector<int> PFSP::insert(std::vector<int> jobsOrder, int i, int j) {
+        int job = jobsOrder[i];
+        jobsOrder.erase(jobsOrder.begin() + i);
         if (i < j) {
-            int job = jobsOrder[i];
-            jobsOrder.erase(jobsOrder.begin() + i);
-            jobsOrder.insert(jobsOrder.begin() + j, job);
+            jobsOrder.insert(jobsOrder.begin() + (j - 1), job); // Adjust j to account for the shift
         } else {
-            int job = jobsOrder[i];
-            jobsOrder.erase(jobsOrder.begin() + i);
-            jobsOrder.insert(jobsOrder.begin() + j - 1, job);
+            jobsOrder.insert(jobsOrder.begin() + j, job);
         }
         return jobsOrder;
     }
 
-    std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]){
-
-        // check that the improvement_methods is either, transpose, exchange or insert
-        if (std::string(improvement_method) != "transpose" && 
-            std::string(improvement_method) != "exchange" && 
-            std::string(improvement_method) != "insert") {
+    std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]) {
+        
+        std::string method(improvement_method);
+        if (method != "transpose" && method != "exchange" && method != "insert") {
             std::cerr << "Invalid improvement method: " << improvement_method << std::endl;
             return jobsOrder;
         }
-
+    
         std::vector<int> bestOrder = jobsOrder;
+        std::vector<std::vector<int>> makespanTable = computeMakespanTable(jobsOrder);
         int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
-
+        std::random_device rd;
+        std::mt19937 g(rd());
+    
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-
+            std::vector<std::vector<int>> currentMakespanTable = makespanTable;
+    
+            // Generate all pairs of indices in random order
+            std::vector<std::pair<int, int>> indices;
             for (int i = 0; i < this->numJobs; ++i) {
                 for (int j = 0; j < this->numJobs; ++j) {
-                    if (i == j) continue;
-
-                    std::vector<int> neighborOrder;
-                    if (std::string(improvement_method) == "transpose" && std::abs(i - j) == 1) {
-                        neighborOrder = transpose(currentOrder, i, j);
-                    } else if (std::string(improvement_method) == "exchange") {
-                        neighborOrder = exchange(currentOrder, i, j);
-                    } else if (std::string(improvement_method) == "insert") {
-                        neighborOrder = insert(currentOrder, i, j);
-                    } else {
-                        continue;
-                    }
-
-                    int neighborTCT = getTotalCompletionTime(neighborOrder);
-                    if (neighborTCT < bestTCT) {
-                        bestTCT = neighborTCT;
-                        bestOrder = neighborOrder;
-                        improved = true;
+                    if (i != j) {
+                        indices.emplace_back(i, j);
                     }
                 }
             }
+            std::shuffle(indices.begin(), indices.end(), g);
+    
+            for (const auto& [i, j] : indices) {
+                std::vector<int> neighborOrder = currentOrder;
+    
+                if (method == "transpose") {
+                    neighborOrder = transpose(currentOrder, i, j);
+                } else if (method == "exchange") {
+                    neighborOrder = exchange(currentOrder, i, j);
+                } else if (method == "insert") {
+                    neighborOrder = insert(currentOrder, i, j);
+                }
+    
+                updateMakespanTable(currentMakespanTable, neighborOrder, std::min(i, j)); // only update the affected part of the table
+    
+                int neighborTCT = 0;
+                for (int k = 0; k < this->numJobs; ++k) {
+                    neighborTCT += currentMakespanTable[k][this->numMachines - 1];
+                }
+    
+                if (neighborTCT < bestTCT) {
+                    bestTCT = neighborTCT;
+                    bestOrder = neighborOrder;
+                    makespanTable = currentMakespanTable;
+                    improved = true;
+                    break;
+                }
+            }
         }
-
+    
         return bestOrder;
     }
     
-    std::vector<int> PFSP::iterative_improvement_best(std::vector<int> jobsOrder, const char improvement_method[]){
+    std::vector<int> PFSP::iterative_improvement_best(std::vector<int> jobsOrder, const char improvement_method[]) {
         std::vector<int> bestOrder = jobsOrder;
+        std::vector<std::vector<int>> makespanTable = computeMakespanTable(jobsOrder);
         int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
-
+    
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-            int currentBestTCT = bestTCT;
-            std::vector<int> currentBestOrder = bestOrder;
-
+            std::vector<std::vector<int>> currentMakespanTable = makespanTable;
+    
             for (int i = 0; i < this->numJobs; ++i) {
                 for (int j = 0; j < this->numJobs; ++j) {
                     if (i == j) continue;
-
-                    std::vector<int> neighborOrder;
+    
+                    std::vector<int> neighborOrder = currentOrder;
+    
                     if (std::string(improvement_method) == "transpose" && std::abs(i - j) == 1) {
                         neighborOrder = transpose(currentOrder, i, j);
                     } else if (std::string(improvement_method) == "exchange") {
@@ -239,22 +269,24 @@
                     } else {
                         continue;
                     }
-
-                    int neighborTCT = getTotalCompletionTime(neighborOrder);
-                    if (neighborTCT < currentBestTCT) {
-                        currentBestTCT = neighborTCT;
-                        currentBestOrder = neighborOrder;
+    
+                    updateMakespanTable(currentMakespanTable, neighborOrder, std::min(i, j));
+    
+                    int neighborTCT = 0;
+                    for (int k = 0; k < this->numJobs; ++k) {
+                        neighborTCT += currentMakespanTable[k][this->numMachines - 1];
+                    }
+    
+                    if (neighborTCT < bestTCT) {
+                        bestTCT = neighborTCT;
+                        bestOrder = neighborOrder;
+                        makespanTable = currentMakespanTable;
                         improved = true;
                     }
                 }
             }
-
-            if (improved) {
-                bestTCT = currentBestTCT;
-                bestOrder = currentBestOrder;
-            }
         }
-
+    
         return bestOrder;
     }
 
@@ -280,4 +312,31 @@
             std::cerr << "Invalid improvementType: " << improvementType << std::endl;
             return std::vector<int>();
         }
+    }
+
+    std::vector<int> PFSP::variable_neighborhood_descent_first(std::vector<std::string> neighborhoodOrder) {
+        // Start from simplified RZ solution
+        std::vector<int> currentSolution = simplifiedRZHeuristic();
+        int currentTCT = getTotalCompletionTime(currentSolution);
+    
+        bool improvement = true;
+        while (improvement) {
+            improvement = false;
+    
+            for (size_t i = 0; i < neighborhoodOrder.size(); ++i) {
+                std::string nh = neighborhoodOrder[i];
+    
+                std::vector<int> improvedSolution = iterative_improvement_first(currentSolution, nh.c_str());
+                int newTCT = getTotalCompletionTime(improvedSolution);
+    
+                if (newTCT < currentTCT) {
+                    currentSolution = improvedSolution;
+                    currentTCT = newTCT;
+                    improvement = true;
+                    break;  // restart from first neighborhood
+                }
+            }
+        }
+    
+        return currentSolution;
     }
