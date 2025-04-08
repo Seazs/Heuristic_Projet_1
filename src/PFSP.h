@@ -22,7 +22,8 @@ public:
     void benchmarkAlgorithm();
     int getMakespan(std::vector<int> jobsOrder);
     std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
-    int computeTotalFlowtime();
+    int getTotalCompletionTime(std::vector<int> jobsOrder);
+
 
     // initial solution generation
     std::vector<int> generateRandomSolution();

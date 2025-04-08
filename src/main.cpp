@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     std::vector<int> algo_result_jobs_order = pfsp.iterative_improvement_algorithm(improvementType, neighborhoodType, initType);
 
     print_jobs_order(algo_result_jobs_order);
-    printf("computed makespan: %d\n", pfsp.getMakespan(algo_result_jobs_order));
+    printf("computed makespan: %d\n", pfsp.getTotalCompletionTime(algo_result_jobs_order));
 
     return 0;
 }

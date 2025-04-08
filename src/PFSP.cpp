@@ -88,6 +88,14 @@
         
     }
     
+    int PFSP::getTotalCompletionTime(std::vector<int> jobsOrder){
+        int totalFlowtime = 0;
+        std::vector<std::vector<int>> makespanTable = computeMakespanTable(jobsOrder);
+        for (int j = 0; j < this->numJobs; ++j) {
+            totalFlowtime += makespanTable[j][this->numMachines-1];
+        }
+        return totalFlowtime;
+    }
     
     // Initial solution generation methods
 
@@ -171,7 +179,7 @@
         }
 
         std::vector<int> bestOrder = jobsOrder;
-        int bestMakespan = getMakespan(jobsOrder);
+        int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
 
         while (improved) {
@@ -193,9 +201,9 @@
                         continue;
                     }
 
-                    int neighborMakespan = getMakespan(neighborOrder);
-                    if (neighborMakespan < bestMakespan) {
-                        bestMakespan = neighborMakespan;
+                    int neighborTCT = getTotalCompletionTime(neighborOrder);
+                    if (neighborTCT < bestTCT) {
+                        bestTCT = neighborTCT;
                         bestOrder = neighborOrder;
                         improved = true;
                     }
@@ -208,13 +216,13 @@
     
     std::vector<int> PFSP::iterative_improvement_best(std::vector<int> jobsOrder, const char improvement_method[]){
         std::vector<int> bestOrder = jobsOrder;
-        int bestMakespan = getMakespan(jobsOrder);
+        int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
 
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-            int currentBestMakespan = bestMakespan;
+            int currentBestTCT = bestTCT;
             std::vector<int> currentBestOrder = bestOrder;
 
             for (int i = 0; i < this->numJobs; ++i) {
@@ -232,9 +240,9 @@
                         continue;
                     }
 
-                    int neighborMakespan = getMakespan(neighborOrder);
-                    if (neighborMakespan < currentBestMakespan) {
-                        currentBestMakespan = neighborMakespan;
+                    int neighborTCT = getTotalCompletionTime(neighborOrder);
+                    if (neighborTCT < currentBestTCT) {
+                        currentBestTCT = neighborTCT;
                         currentBestOrder = neighborOrder;
                         improved = true;
                     }
@@ -242,7 +250,7 @@
             }
 
             if (improved) {
-                bestMakespan = currentBestMakespan;
+                bestTCT = currentBestTCT;
                 bestOrder = currentBestOrder;
             }
         }
