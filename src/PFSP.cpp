@@ -9,6 +9,7 @@
 #include <numeric>
 #include <random>
 #include <algorithm>
+#include <chrono>
 
 #define INT_MAX 2147483647
 
@@ -117,8 +118,7 @@
     std::vector<int> PFSP::generateRandomSolution(){
         std::vector<int> jobsOrder(this->numJobs);
         std::iota(jobsOrder.begin(), jobsOrder.end(), 0); // Fill with 0 to numJobs-1
-        std::random_device rd;
-        std::mt19937 g(rd());
+        std::mt19937 g(std::chrono::steady_clock::now().time_since_epoch().count());
         std::shuffle(jobsOrder.begin(), jobsOrder.end(), g); // Shuffle to create a random permutation
         return jobsOrder;
     }
@@ -131,8 +131,10 @@
         for (int j = 0; j < this->numJobs; ++j) {
             jobsSumProcessingTimes[j].first = std::accumulate(this->jobs[j].processingTimes.begin(), this->jobs[j].processingTimes.end(), 0);
             jobsSumProcessingTimes[j].second = j;
+            
         }
         std::sort(jobsSumProcessingTimes.begin(), jobsSumProcessingTimes.end());
+
         
         // Construct the jobs order by adding one job at a time
         for (int step = 0; step < this->numJobs; ++step) {
@@ -154,7 +156,7 @@
             // Update jobsOrder with the best order found
             jobsOrder = bestOrder;
         }
-
+        
         return jobsOrder;
     }
 
@@ -193,8 +195,7 @@
         std::vector<std::vector<int>> makespanTable = computeMakespanTable(jobsOrder);
         int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
-        std::random_device rd;
-        std::mt19937 g(rd());
+        std::mt19937 g(std::chrono::steady_clock::now().time_since_epoch().count());
     
         while (improved) {
             improved = false;
@@ -217,8 +218,10 @@
     
                 if (method == "transpose") {
                     neighborOrder = transpose(currentOrder, i, j);
+                    //printf("transpose %d %d\n", i, j);
                 } else if (method == "exchange") {
                     neighborOrder = exchange(currentOrder, i, j);
+                    //printf("exchange %d %d\n", i, j);
                 } else if (method == "insert") {
                     neighborOrder = insert(currentOrder, i, j);
                 }
@@ -227,7 +230,7 @@
     
                 int neighborTCT = 0;
                 for (int k = 0; k < this->numJobs; ++k) {
-                    neighborTCT += currentMakespanTable[k][this->numMachines - 1];
+                    neighborTCT += currentMakespanTable[k][this->numMachines - 1]; // Sum the last column of the makespan table to get the total completion time
                 }
     
                 if (neighborTCT < bestTCT) {

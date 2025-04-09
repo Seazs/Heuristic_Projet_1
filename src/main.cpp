@@ -17,6 +17,7 @@ using namespace std;
 void handleProgramParameters(int argc, char* argv[], std::string& dataFileName, std::string& improvementType, std::string& neighborhoodType, std::string& initType);
 
 int main(int argc, char* argv[]) {
+
     
     std::string dataFileName, improvementType, neighborhoodType, initType;
     

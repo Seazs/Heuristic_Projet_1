@@ -76,11 +76,13 @@ The algorithms are benchmarked against standard instances, and their performance
 ## Benchmarking
 
 To benchmark the algorithms, use the provided Python scripts from the root directory:
-- **`performance_statistics.py`**: Runs experiments and collects statistics for different algorithm configurations.
-- **`VND_statistics.py`**: Analyzes the performance of VND algorithms.
-- **`statistical_tests.py`**: Performs statistical tests (e.g., Wilcoxon test) to compare algorithm performance.
+- **`detailed_single_neighborhood_statistics.py`**: Runs experiments and collects statistics for different algorithm configurations for a single neighborhood. Puts the results in `detailed_results.csv`.
+- **`detailed_VND_statistics.py`**: Runs experiments and collects statistics for different algorithm configurations for a VND approach. Puts the results in `detailed_VND_results.csv`.
+- **`analyze_single_results`**: Performs statistical tests (e.g., Wilcoxon test) to compare algorithm performance across different configurations of single neighborhoods.
+- **`analyze_VND_results`**: Performs statistical tests to compare algorithm performance across different configurations of VND.
+The two analysis scripts allow to answere to the assginment questions.
+```
 
-Results are saved in `results.csv` for further analysis.
 
 ## Statistical Analysis
 

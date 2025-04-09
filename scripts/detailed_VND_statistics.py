@@ -50,6 +50,19 @@ def save_results():
             })
     print(f"\nResults saved to {output_file}")
 
+def save_detailed_results(all_run_results):
+    output_file = "detailed_results_VND.csv"
+    with open(output_file, "w", newline="") as csvfile:
+        fieldnames = ["Instance", "Instance Size", "Pivoting Rule", "Neighborhood", "Initial Solution", "Run", "Deviation (%)", "Time (s)"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        
+        for row in all_run_results:
+            writer.writerow(row)
+    
+    print(f"Detailed results saved to {output_file}")
+
+
 # Signal handler for graceful termination
 def signal_handler(sig, frame):
     print("\nTermination signal received. Saving results...")
@@ -64,7 +77,8 @@ signal.signal(signal.SIGINT, signal_handler)
 def run_experiment(args):
     instance_path, pivoting, neighborhood, init_solution, best_value, num_runs, instance_size = args
     group_key = (pivoting, neighborhood, init_solution, instance_size)
-    local_results = {"deviations": [], "total_time": 0}
+    instance_name = os.path.basename(instance_path)
+    run_results = []
 
     for run in range(num_runs):
         commande = f"{executable} {instance_path} --{pivoting} --{neighborhood} --{init_solution}"
@@ -80,11 +94,20 @@ def run_experiment(args):
             continue
 
         deviation = ((solution_value - best_value) / best_value) * 100
-        local_results["deviations"].append(deviation)
-        local_results["total_time"] += (end_time - start_time)
+        elapsed = end_time - start_time
 
-    
-    return group_key, local_results
+        run_results.append({
+            "Instance": instance_name,
+            "Instance Size": instance_size,
+            "Pivoting Rule": pivoting,
+            "Neighborhood": neighborhood,
+            "Initial Solution": init_solution,
+            "Run": run + 1,
+            "Deviation (%)": round(deviation, 4),
+            "Time (s)": round(elapsed, 4),
+        })
+
+    return group_key, run_results
 
 # Prepare arguments for multiprocessing
 tasks = []
@@ -114,9 +137,18 @@ with Pool() as pool:
     results = pool.map(run_experiment, tasks)
 
 # Aggregate results
-for group_key, local_results in results:
-    grouped_results[group_key]["deviations"].extend(local_results["deviations"])
-    grouped_results[group_key]["total_time"] += local_results["total_time"]
+all_run_results = []
 
-# Write aggregated results to CSV
+for group_key, run_data in results:
+    for row in run_data:
+        all_run_results.append(row)
+
+    # Still aggregate if you want the summary file
+    deviations = [row["Deviation (%)"] for row in run_data]
+    total_time = sum([row["Time (s)"] for row in run_data])
+    grouped_results[group_key]["deviations"].extend(deviations)
+    grouped_results[group_key]["total_time"] += total_time
+
+# Save both detailed and summary
+save_detailed_results(all_run_results)
 save_results()
