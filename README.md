@@ -13,16 +13,22 @@ Heuristic_PFSP
 │   ├── utils.cpp         # Utility functions
 │   └── utils.h           # Header file for utility functions
 ├── scripts
-│   ├── performance_statistics.py  # Script for running experiments and collecting statistics
-│   ├── statistical_tests.py       # Script for performing statistical tests
-│   ├── VND_statistics.py          # Script for analyzing VND performance
-│   └── test.py                    # Script for testing the implementation
+│   ├── detailed_single_neighborhood_statistics.py  # Script for running experiments and collecting statistics
+│   ├── detailed_VND_statistics.py                  # Script for running VND experiments and collecting statistics
+│   ├── analyze_single_results.py                   # Script for analyzing single neighborhood results
+│   └── detailed_VND_statistics.py                  # Script for analyzing VND results
 ├── data
 │   ├── bestKnownTCT.txt  # File containing the best-known TCT values for benchmark instances
 │   ├── Benchmarks/       # Directory containing benchmark instances
+├── data_txt_files
+│   ├── detailed_results.txt       # Detailed results of single neighborhood experiments
+│   ├── detailed_results_VND.txt   # Detailed results of VND experiments
 ├── build                 # Directory for compiled object files
-├── results.csv           # File to store aggregated results
+├── detailed_results.csv  # File to store detailed results of single neighborhood experiments
+├── detailed_results_VND.csv # File to store detailed results of VND experiments
 ├── Makefile              # Build instructions
+├── PDF
+│   └── Report_1_Bienfait_Alexandre.pdf # Project report
 └── README.md             # Project documentation
 ```
 
@@ -84,12 +90,5 @@ The two analysis scripts allow to answere to the assginment questions.
 ```
 
 
-## Statistical Analysis
 
-The project includes tools to perform statistical tests to compare:
-1. Initial solution methods (`random` vs. `srz`).
-2. Pivoting rules (`first` vs. `best`).
-3. Neighborhoods (`transpose`, `exchange`, `insert`).
-
-Use the `statistical_tests.py` script or export results to R for advanced analysis.
 
