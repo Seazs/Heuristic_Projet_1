@@ -184,7 +184,6 @@
     }
 
     std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]) {
-        
         std::string method(improvement_method);
         if (method != "transpose" && method != "exchange" && method != "insert") {
             std::cerr << "Invalid improvement method: " << improvement_method << std::endl;
@@ -200,7 +199,6 @@
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-            std::vector<std::vector<int>> currentMakespanTable = makespanTable;
     
             // Generate all pairs of indices in random order
             std::vector<std::pair<int, int>> indices;
@@ -218,25 +216,25 @@
     
                 if (method == "transpose") {
                     neighborOrder = transpose(currentOrder, i, j);
-                    //printf("transpose %d %d\n", i, j);
                 } else if (method == "exchange") {
                     neighborOrder = exchange(currentOrder, i, j);
-                    //printf("exchange %d %d\n", i, j);
                 } else if (method == "insert") {
                     neighborOrder = insert(currentOrder, i, j);
                 }
     
-                updateMakespanTable(currentMakespanTable, neighborOrder, std::min(i, j)); // only update the affected part of the table
+                // Create a fresh copy of the makespan table for this neighbor
+                std::vector<std::vector<int>> neighborMakespanTable = makespanTable;
+                updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
     
                 int neighborTCT = 0;
                 for (int k = 0; k < this->numJobs; ++k) {
-                    neighborTCT += currentMakespanTable[k][this->numMachines - 1]; // Sum the last column of the makespan table to get the total completion time
+                    neighborTCT += neighborMakespanTable[k][this->numMachines - 1]; // Sum the last column of the makespan table
                 }
     
                 if (neighborTCT < bestTCT) {
                     bestTCT = neighborTCT;
                     bestOrder = neighborOrder;
-                    makespanTable = currentMakespanTable;
+                    makespanTable = neighborMakespanTable; // Update the main makespan table
                     improved = true;
                     break;
                 }
@@ -255,7 +253,6 @@
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-            std::vector<std::vector<int>> currentMakespanTable = makespanTable;
     
             for (int i = 0; i < this->numJobs; ++i) {
                 for (int j = 0; j < this->numJobs; ++j) {
@@ -273,17 +270,19 @@
                         continue;
                     }
     
-                    updateMakespanTable(currentMakespanTable, neighborOrder, std::min(i, j));
+                    // Create a fresh copy of the makespan table for this neighbor
+                    std::vector<std::vector<int>> neighborMakespanTable = makespanTable;
+                    updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
     
                     int neighborTCT = 0;
                     for (int k = 0; k < this->numJobs; ++k) {
-                        neighborTCT += currentMakespanTable[k][this->numMachines - 1];
+                        neighborTCT += neighborMakespanTable[k][this->numMachines - 1];
                     }
     
                     if (neighborTCT < bestTCT) {
                         bestTCT = neighborTCT;
                         bestOrder = neighborOrder;
-                        makespanTable = currentMakespanTable;
+                        makespanTable = neighborMakespanTable; // Update the main makespan table
                         improved = true;
                     }
                 }

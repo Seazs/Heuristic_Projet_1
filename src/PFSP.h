@@ -19,7 +19,6 @@ struct Machine {
 class PFSP {
 public:
     PFSP(const char filename[]);
-    void benchmarkAlgorithm();
     int getMakespan(std::vector<int> jobsOrder);
     std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
     void updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex);
