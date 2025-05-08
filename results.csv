@@ -1,0 +1,13 @@
+Instance Size,Pivoting Rule,Neighborhood,Initial Solution,Average Deviation (%),Total Time (s)
+50,first,transpose,random,19.66,73.11
+50,first,transpose,srz,5.82,33.61
+50,first,exchange,random,5.15,66.2
+50,first,exchange,srz,4.26,56.4
+50,first,insert,random,3.84,89.43
+50,first,insert,srz,3.04,71.04
+50,best,transpose,random,26.26,2.93
+50,best,transpose,srz,5.96,10.07
+50,best,exchange,random,26.13,45.76
+50,best,exchange,srz,6.01,48.19
+50,best,insert,random,26.05,39.15
+50,best,insert,srz,6.01,45.78

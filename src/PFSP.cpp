@@ -49,19 +49,6 @@
 
     std::vector<std::vector<int>> PFSP::computeMakespanTable(std::vector<int> jobsOrder){
 
-        // check that the jobsorder has the right size and contain all the jobs only once
-        // if (jobsOrder.size() != this->numJobs) {
-        //     std::cerr << "Jobs order size (" << jobsOrder.size() << ") is not equal to the number of jobs." << std::endl;
-        //     return std::vector<std::vector<int>>();
-        // }
-        // std::vector<int> jobsOrderCopy = jobsOrder;
-        // std::sort(jobsOrderCopy.begin(), jobsOrderCopy.end());
-        // for (int i = 0; i < this->numJobs; ++i) {
-        //     if (jobsOrderCopy[i] != i) {
-        //         std::cerr << "Jobs order does not contain all the jobs." << std::endl;
-        //         return std::vector<std::vector<int>>();
-        //     }
-        // }
 
 
         std::vector<std::vector<int>> makespanTable(this->numJobs, std::vector<int>(this->numMachines, 0));
@@ -253,7 +240,7 @@
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-    
+            std::vector<std::vector<int>> neighborMakespanTable;
             for (int i = 0; i < this->numJobs; ++i) {
                 for (int j = 0; j < this->numJobs; ++j) {
                     if (i == j) continue;
@@ -271,7 +258,7 @@
                     }
     
                     // Create a fresh copy of the makespan table for this neighbor
-                    std::vector<std::vector<int>> neighborMakespanTable = makespanTable;
+                    neighborMakespanTable = makespanTable;
                     updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
     
                     int neighborTCT = 0;
@@ -282,11 +269,11 @@
                     if (neighborTCT < bestTCT) {
                         bestTCT = neighborTCT;
                         bestOrder = neighborOrder;
-                        makespanTable = neighborMakespanTable; // Update the main makespan table
                         improved = true;
                     }
                 }
             }
+            makespanTable = neighborMakespanTable; // Update the main makespan table
         }
     
         return bestOrder;

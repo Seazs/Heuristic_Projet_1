@@ -2,7 +2,7 @@ import pandas as pd
 from scipy.stats import wilcoxon
 
 # Load the detailed results
-data = pd.read_csv("detailed_result_VND.csv")
+data = pd.read_csv("detailed_result.csv")
 
 # Function to perform Wilcoxon test and print results
 def perform_wilcoxon_test(group1, group2, metric, description):
