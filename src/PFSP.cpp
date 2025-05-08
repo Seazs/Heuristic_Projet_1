@@ -10,6 +10,7 @@
 #include <random>
 #include <algorithm>
 #include <chrono>
+#include <functional>
 
 #define INT_MAX 2147483647
 
@@ -182,35 +183,46 @@
         int bestTCT = getTotalCompletionTime(jobsOrder);
         bool improved = true;
         std::mt19937 g(std::chrono::steady_clock::now().time_since_epoch().count());
-    
+        
+        // Generate all pairs of indices in random order.
+        // this order will be the same for all iterations
+        std::vector<std::pair<int, int>> indices;
+        for (int i = 0; i < this->numJobs; ++i) {
+            for (int j = 0; j < this->numJobs; ++j) {
+                if (i != j) {
+                    indices.emplace_back(i, j);
+                }
+            }
+        }
+        std::shuffle(indices.begin(), indices.end(), g);
+
+        std::function<std::vector<int>(std::vector<int>, int, int)> neighboor_function;
+        if (method == "transpose") {
+            neighboor_function = [this](std::vector<int> jobsOrder, int i, int j) {
+                return this->transpose(jobsOrder, i, j);
+            };
+        } else if (method == "exchange") {
+            neighboor_function = [this](std::vector<int> jobsOrder, int i, int j) {
+                return this->exchange(jobsOrder, i, j);
+            };
+        } else if (method == "insert") {
+            neighboor_function = [this](std::vector<int> jobsOrder, int i, int j) {
+                return this->insert(jobsOrder, i, j);
+            };
+        }
+
         while (improved) {
             improved = false;
             std::vector<int> currentOrder = bestOrder;
-    
-            // Generate all pairs of indices in random order
-            std::vector<std::pair<int, int>> indices;
-            for (int i = 0; i < this->numJobs; ++i) {
-                for (int j = 0; j < this->numJobs; ++j) {
-                    if (i != j) {
-                        indices.emplace_back(i, j);
-                    }
-                }
-            }
-            std::shuffle(indices.begin(), indices.end(), g);
-    
+            std::vector<std::vector<int>> neighborMakespanTable;
+        
             for (const auto& [i, j] : indices) {
                 std::vector<int> neighborOrder = currentOrder;
-    
-                if (method == "transpose") {
-                    neighborOrder = transpose(currentOrder, i, j);
-                } else if (method == "exchange") {
-                    neighborOrder = exchange(currentOrder, i, j);
-                } else if (method == "insert") {
-                    neighborOrder = insert(currentOrder, i, j);
-                }
+                
+                neighborOrder = neighboor_function(currentOrder, i, j);
     
                 // Create a fresh copy of the makespan table for this neighbor
-                std::vector<std::vector<int>> neighborMakespanTable = makespanTable;
+                neighborMakespanTable = makespanTable;
                 updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
     
                 int neighborTCT = 0;

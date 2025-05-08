@@ -5,6 +5,7 @@ import time
 import signal
 import sys
 from collections import defaultdict
+from tqdm import tqdm
 from multiprocessing import Pool
 
 # Paths
@@ -134,7 +135,7 @@ for instance_file in os.listdir(instances_dir):
 
 # Run tasks in parallel
 with Pool() as pool:
-    results = pool.map(run_experiment, tasks)
+    results = list(tqdm(pool.imap_unordered(run_experiment, tasks), total=len(tasks), desc="Running experiments"))
 
 # Aggregate results
 all_run_results = []
