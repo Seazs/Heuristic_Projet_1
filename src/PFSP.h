@@ -19,10 +19,11 @@ struct Machine {
 class PFSP {
 public:
     PFSP(const char filename[]);
-    int getMakespan(std::vector<int> jobsOrder);
-    std::vector<std::vector<int>> computeMakespanTable(std::vector<int> jobsOrder);
+    int getMakespan(const std::vector<int> jobsOrder);
+    std::vector<std::vector<int>> computeMakespanTable(const std::vector<int> jobsOrder);
     void updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex);
-    int getTotalCompletionTime(std::vector<int> jobsOrder);
+    int getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>> makespanTable);
+    int getTotalCompletionTime(const std::vector<int> jobsOrder);
 
 
     // initial solution generation
@@ -30,9 +31,9 @@ public:
     std::vector<int> simplifiedRZHeuristic();
 
     // improvement methods
-    std::vector<int> transpose(std::vector<int> jobsOrder, int i, int j);
-    std::vector<int> exchange(std::vector<int> jobsOrder, int i, int j);
-    std::vector<int> insert(std::vector<int> jobsOrder, int i, int j);
+    void transpose(std::vector<int>& jobsOrder, int i, int j);
+    void exchange(std::vector<int>& jobsOrder, int i, int j);
+    void insert(std::vector<int>& jobsOrder, int i, int j);
 
     // iterative methods
     std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]);

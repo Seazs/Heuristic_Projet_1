@@ -22,6 +22,10 @@ OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 # Règle par défaut
 all: $(TARGET)
 
+# règle pour générer l'executable avec profiler
+profile: CXXFLAGS += -pg
+profile: $(TARGET)
+
 # Règle pour générer l'exécutable
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
