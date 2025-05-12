@@ -215,12 +215,12 @@
     std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType) {
     
         std::vector<int> bestOrder = jobsOrder;
-        int** makespanTable_first = new int*[this->numJobs];
-        for (int i = 0; i < this->numJobs; ++i) {
-            makespanTable_first[i] = new int[this->numMachines];
-        }
-        computeMakespanTable(jobsOrder, makespanTable_first);
-        int bestTCT = getTotalCompletionTime(jobsOrder, makespanTable_first);
+        // int** makespanTable_first = new int*[this->numJobs];
+        // for (int i = 0; i < this->numJobs; ++i) {
+        //     makespanTable_first[i] = new int[this->numMachines];
+        // }
+        computeMakespanTable(jobsOrder, this->makespanTable);
+        int bestTCT = getTotalCompletionTime(jobsOrder, this->makespanTable);
         bool improved = true;
         
         // Generate all pairs of indices in random order.
@@ -260,7 +260,7 @@
                 neighboor_function(neighborOrder, i, j);
     
                 // Create a deep copy of the makespan table for this neighbor
-                copyMakespanTable(neighborMakespanTable, makespanTable_first, this->numJobs, this->numMachines);
+                copyMakespanTable(neighborMakespanTable, this->makespanTable, this->numJobs, this->numMachines);
                 // Update the makespan table for the neighbor order
                 updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
     
@@ -269,23 +269,23 @@
                 if (neighborTCT < bestTCT) {
                     bestTCT = neighborTCT;
                     bestOrder = neighborOrder;
-                    copyMakespanTable(makespanTable_first, neighborMakespanTable, this->numJobs, this->numMachines);
+                    copyMakespanTable(this->makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
                     improved = true;
                     std::cout << "Improved makespan: " << bestTCT << std::endl;
                     break;
                 }
             }
         }
-        copyMakespanTable(this->makespanTable, makespanTable_first, this->numJobs, this->numMachines);
+        //copyMakespanTable(this->makespanTable, makespanTable_first, this->numJobs, this->numMachines);
         // Clean up
         for (int i = 0; i < this->numJobs; ++i) {
             delete[] neighborMakespanTable[i];
         }
         delete[] neighborMakespanTable;
-        for (int i = 0; i < this->numJobs; ++i) {
-            delete[] makespanTable_first[i];
-        }
-        delete[] makespanTable_first;
+        // for (int i = 0; i < this->numJobs; ++i) {
+        //     delete[] makespanTable_first[i];
+        // }
+        // delete[] makespanTable_first;
         return bestOrder;
     }
     
