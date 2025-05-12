@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 
     // print_jobs_order(algo_result_jobs_order);
     int TotalCompletionTime = pfsp.getTotalCompletionTime(algo_result_jobs_order, pfsp.makespanTable);
-    print_jobs_order(algo_result_jobs_order);
+    //print_jobs_order(algo_result_jobs_order);
     printf("%d", TotalCompletionTime);
 
     return 0;
