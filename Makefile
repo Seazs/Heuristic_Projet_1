@@ -2,7 +2,7 @@
 CXX = g++
 
 # Drapeaux de compilation
-CXXFLAGS = -Wall -Wextra -std=c++17
+CXXFLAGS = -Wall -Wextra -std=c++17 -floop-interchange -floop-strip-mine -floop-block -floop-parallelize-all -ftree-parallelize-loops=4 -Ofast
 
 # Nom de l'exécutable
 TARGET = Heuristic_PFSP
