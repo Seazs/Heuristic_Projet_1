@@ -39,7 +39,7 @@ public:
     void insert(std::vector<int>& jobsOrder, int i, int j);
 
     // iterative methods
-    std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType);
+    std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType, std::vector<std::pair<int, int>>& indices);
     std::vector<int> iterative_improvement_best(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType);
 
     // main algo method

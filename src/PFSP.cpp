@@ -212,30 +212,14 @@
         }
     }
 
-    std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType) {
+    std::vector<int> PFSP::iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType, std::vector<std::pair<int, int>>& indices) {
     
         std::vector<int> bestOrder = jobsOrder;
-        // int** makespanTable_first = new int*[this->numJobs];
-        // for (int i = 0; i < this->numJobs; ++i) {
-        //     makespanTable_first[i] = new int[this->numMachines];
-        // }
         computeMakespanTable(jobsOrder, this->makespanTable);
         int bestTCT = getTotalCompletionTime(jobsOrder, this->makespanTable);
         bool improved = true;
         
-        // Generate all pairs of indices in random order.
-        // this order will be the same for all iterations
-        std::vector<std::pair<int, int>> indices;
-        for (int i = 0; i < this->numJobs; ++i) {
-            for (int j = 0; j < this->numJobs; ++j) {
-                if (i != j) {
-                    indices.emplace_back(i, j);
-                }
-            }
-        }
-        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-        std::mt19937 g(seed);
-        std::shuffle(indices.begin(), indices.end(), g);
+
 
         
 
@@ -282,10 +266,7 @@
             delete[] neighborMakespanTable[i];
         }
         delete[] neighborMakespanTable;
-        // for (int i = 0; i < this->numJobs; ++i) {
-        //     delete[] makespanTable_first[i];
-        // }
-        // delete[] makespanTable_first;
+
         return bestOrder;
     }
     
@@ -391,7 +372,20 @@
 
         // Apply the iterative improvement method based on improvementType
         if (improvementType == "first") {
-            return iterative_improvement_first(initialSolution, neighboor_function, neighborhoodType);
+            // Generate all pairs of indices in random order.
+            // this order will be the same for all iterations
+            std::vector<std::pair<int, int>> indices;
+            for (int i = 0; i < this->numJobs; ++i) {
+                for (int j = 0; j < this->numJobs; ++j) {
+                    if (i != j) {
+                        indices.emplace_back(i, j);
+                    }
+                }
+            }
+            unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+            std::mt19937 g(seed);
+            std::shuffle(indices.begin(), indices.end(), g);            
+            return iterative_improvement_first(initialSolution, neighboor_function, neighborhoodType, indices);
         } else if (improvementType == "best") {
             return iterative_improvement_best(initialSolution, neighboor_function, neighborhoodType);
         } else {
@@ -413,6 +407,21 @@
         };
         std::vector<std::string> neighborhoodTypes = {"transpose", "exchange", "insert"};
     
+
+        // Generate all pairs of indices in random order.
+        // this order will be the same for all iterations
+        std::vector<std::pair<int, int>> indices;
+        for (int i = 0; i < this->numJobs; ++i) {
+            for (int j = 0; j < this->numJobs; ++j) {
+                if (i != j) {
+                    indices.emplace_back(i, j);
+                }
+            }
+        }
+        unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::mt19937 g(seed);
+        std::shuffle(indices.begin(), indices.end(), g);
+
         bool improvement = true;
         while (improvement) {
             improvement = false;
@@ -421,7 +430,7 @@
                 // std::cout << "Trying neighborhood: " << neighborhoodTypes[neighborhoodOrder[i]] << std::endl;
                 std::function<void(std::vector<int>&, int, int)> nh = neighborhoodFunctions[neighborhoodOrder[i]];
     
-                std::vector<int> improvedSolution = iterative_improvement_first(currentSolution, nh, neighborhoodTypes[neighborhoodOrder[i]]);
+                std::vector<int> improvedSolution = iterative_improvement_first(currentSolution, nh, neighborhoodTypes[neighborhoodOrder[i]], indices);
                 // std::cout << "finished neighborhood: " << neighborhoodTypes[neighborhoodOrder[i]] << std::endl;
                 updateMakespanTable(this->makespanTable, improvedSolution, 0);
                 
