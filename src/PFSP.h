@@ -22,7 +22,7 @@ public:
     int getMakespan(const std::vector<int> jobsOrder);
     std::vector<std::vector<int>> computeMakespanTable(const std::vector<int> jobsOrder);
     void updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex);
-    int getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>> makespanTable);
+    int getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>>& makespanTable);
     int getTotalCompletionTime(const std::vector<int> jobsOrder);
 
 
@@ -56,7 +56,7 @@ public:
 
 private:
     
-
+    std::string filename;
     int makespan;
     int totalFlowtime;
 };

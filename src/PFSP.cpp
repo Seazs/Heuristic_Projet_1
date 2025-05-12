@@ -17,7 +17,12 @@
 
 
     PFSP::PFSP(const char filename[]){
-        importData(filename);
+        try{importData(filename);
+        }catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
     }
     // void benchmarkAlgorithm();
     // int computeMakespan();
@@ -28,6 +33,7 @@
             std::cerr << "Error opening file: " << filename << std::endl;
             return ;
         }
+        this->filename = filename;
 
         file >> this->numJobs >> this->numMachines;
 
@@ -71,10 +77,16 @@
     }
     void PFSP::updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex) {
         for (int j = startIndex; j < this->numJobs; ++j) {
-            const auto& processingTimes = this->jobs[jobsOrder[j]].processingTimes;
-            makespanTable[j][0] = (j == 0 ? 0 : makespanTable[j - 1][0]) + processingTimes[0];
-            for (int i = 1; i < this->numMachines; ++i) {
-                makespanTable[j][i] = std::max((j == 0 ? 0 : makespanTable[j - 1][i]), makespanTable[j][i - 1]) + processingTimes[i];
+            for (int i = 0; i < this->numMachines; ++i) {
+                if (j == 0 && i == 0) {
+                    makespanTable[j][i] = this->jobs[jobsOrder[j]].processingTimes[i];
+                } else if (j == 0) {
+                    makespanTable[j][i] = makespanTable[j][i - 1] + this->jobs[jobsOrder[j]].processingTimes[i];
+                } else if (i == 0) {
+                    makespanTable[j][i] = makespanTable[j - 1][i] + this->jobs[jobsOrder[j]].processingTimes[i];
+                } else {
+                    makespanTable[j][i] = std::max(makespanTable[j - 1][i], makespanTable[j][i - 1]) + this->jobs[jobsOrder[j]].processingTimes[i];
+                }
             }
         }
     }
@@ -84,7 +96,7 @@
         
     }
     
-    int PFSP::getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>> makespanTable){
+    int PFSP::getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>>& makespanTable){
         int totalFlowtime = 0;
         for (int j = 0; j < this->numJobs; ++j) {
             totalFlowtime += makespanTable[j][this->numMachines-1];
@@ -95,13 +107,16 @@
         std::vector<std::vector<int>> makespanTable = computeMakespanTable(jobsOrder);
         return getTotalCompletionTime(jobsOrder, makespanTable);
     }
+
     
     // Initial solution generation methods
 
     std::vector<int> PFSP::generateRandomSolution(){
         std::vector<int> jobsOrder(this->numJobs);
         std::iota(jobsOrder.begin(), jobsOrder.end(), 0); // Fill with 0 to numJobs-1
-        std::mt19937 g(std::chrono::steady_clock::now().time_since_epoch().count());
+        std::hash<std::string> hash_fn;
+        size_t seed = hash_fn(this->filename);
+        std::mt19937 g(seed); // Seed the random number generator with the hash of the filename
         std::shuffle(jobsOrder.begin(), jobsOrder.end(), g); // Shuffle to create a random permutation
         return jobsOrder;
     }
@@ -206,13 +221,20 @@
             return jobsOrder;
         }
 
+        std::vector<int> currentOrder;
+        std::vector<std::vector<int>> neighborMakespanTable;
+        std::vector<int> neighborOrder;
         while (improved) {
             improved = false;
-            std::vector<int> currentOrder = bestOrder;
-            std::vector<std::vector<int>> neighborMakespanTable;
+            currentOrder = bestOrder;
         
             for (const auto& [i, j] : indices) {
-                std::vector<int> neighborOrder = currentOrder;
+
+                if (improvement_method == "transpose" && std::abs(i - j) != 1) {
+                    continue; // Skip non-neighboring indices for transpose
+                }
+
+                neighborOrder = currentOrder;
                 
                 neighboor_function(neighborOrder, i, j);
     
@@ -230,6 +252,7 @@
                     bestOrder = neighborOrder;
                     makespanTable = neighborMakespanTable; // Update the main makespan table
                     improved = true;
+                    std::cout << "Improved makespan: " << bestTCT << std::endl;
                     
                     break;
                 }
