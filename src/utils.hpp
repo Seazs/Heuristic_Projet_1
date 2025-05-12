@@ -7,6 +7,6 @@
 #include <string>
 
 void print_jobs_order(std::vector<int> jobsOrder);
-void print_makespan_table(std::vector<std::vector<int>> makespanTable);
+void print_makespan_table(int** makespanTable, int rows, int cols);
 
 #endif // UTILS_H

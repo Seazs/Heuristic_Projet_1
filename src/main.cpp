@@ -1,5 +1,5 @@
-#include "PFSP.h"
-// #include "utils.h"
+#include "PFSP.hpp"
+#include "utils.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -28,17 +28,18 @@ int main(int argc, char* argv[]) {
     std::vector<int> algo_result_jobs_order ;
     
     if (neighborhoodType == "vnd1") {
-        std::vector<std::string> neighborhoodOrder = {"transpose", "exchange", "insert"};
+        std::vector<int> neighborhoodOrder = {0, 1, 2};
         algo_result_jobs_order = pfsp.variable_neighborhood_descent_first(neighborhoodOrder);
     } else if (neighborhoodType == "vnd2") {
-        std::vector<std::string> neighborhoodOrder = {"transpose", "insert", "exchange"};
+        std::vector<int> neighborhoodOrder = {0, 2, 1};
         algo_result_jobs_order = pfsp.variable_neighborhood_descent_first(neighborhoodOrder);
     } else {
         algo_result_jobs_order = pfsp.iterative_improvement_algorithm(improvementType, neighborhoodType, initType);
     }
 
     // print_jobs_order(algo_result_jobs_order);
-    int TotalCompletionTime = pfsp.getTotalCompletionTime(algo_result_jobs_order);
+    int TotalCompletionTime = pfsp.getTotalCompletionTime(algo_result_jobs_order, pfsp.makespanTable);
+    print_jobs_order(algo_result_jobs_order);
     printf("%d", TotalCompletionTime);
 
     return 0;

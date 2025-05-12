@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 
 
@@ -19,11 +20,13 @@ struct Machine {
 class PFSP {
 public:
     PFSP(const char filename[]);
+    ~PFSP();
     int getMakespan(const std::vector<int> jobsOrder);
-    std::vector<std::vector<int>> computeMakespanTable(const std::vector<int> jobsOrder);
-    void updateMakespanTable(std::vector<std::vector<int>>& makespanTable, const std::vector<int>& jobsOrder, int startIndex);
-    int getTotalCompletionTime(const std::vector<int> jobsOrder, const std::vector<std::vector<int>> makespanTable);
-    int getTotalCompletionTime(const std::vector<int> jobsOrder);
+    void computeMakespanTable(const std::vector<int>& jobsOrder, int** makespanTable);
+    void updateMakespanTable(int** makespanTable, const std::vector<int>& jobsOrder, int startIndex);
+    void copyMakespanTable(int** dest, int** src, int rows, int cols);
+    int getTotalCompletionTime(const std::vector<int>& jobsOrder, int** makespanTable);
+    int getTotalCompletionTime(const std::vector<int>& jobsOrder);
 
 
     // initial solution generation
@@ -36,27 +39,29 @@ public:
     void insert(std::vector<int>& jobsOrder, int i, int j);
 
     // iterative methods
-    std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, const char improvement_method[]);
-    std::vector<int> iterative_improvement_best(std::vector<int> jobsOrder, const char improvement_method[]);
+    std::vector<int> iterative_improvement_first(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType);
+    std::vector<int> iterative_improvement_best(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType);
 
     // main algo method
     std::vector<int> iterative_improvement_algorithm(std::string& improvementType, std::string& neighborhoodType, std::string& initType);
 
     // VND method
-    std::vector<int> variable_neighborhood_descent_first(std::vector<std::string> neighborhoodOrder);
+    std::vector<int> variable_neighborhood_descent_first(std::vector<int> neighborhoodOrder);
 
     void importData(const char filename[]);
 
 
+    int instanceNumber;
     std::vector<Job> jobs;
     std::vector<Machine> machines;
-    std::vector<std::vector<int>> makespanTable;
+    int** makespanTable;
     unsigned int numMachines;
     unsigned int numJobs;
-
-private:
     
 
+
+private:
+    std::string filename;
     int makespan;
     int totalFlowtime;
 };
