@@ -229,10 +229,11 @@
         }
         
         std::vector<int> neighborOrder;
+        std::vector<int> currentOrder;
 
         while (improved) {
             improved = false;
-            std::vector<int> currentOrder = bestOrder;
+            currentOrder = bestOrder;
             for (const auto& [i, j] : indices) {
                 // check if neighboor function is transpose and if |i - j| < , continue
                 if (neighborhoodType == "transpose" && std::abs(i - j) != 1) {
@@ -255,7 +256,7 @@
                     bestOrder = neighborOrder;
                     copyMakespanTable(this->makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
                     improved = true;
-                    std::cout << "Improved makespan: " << bestTCT << std::endl;
+                    // std::cout << "Improved makespan: " << bestTCT << std::endl;
                     break;
                 }
             }
@@ -273,12 +274,12 @@
     std::vector<int> PFSP::iterative_improvement_best(std::vector<int> jobsOrder, std::function<void(std::vector<int>&, int, int)> neighboor_function, std::string neighborhoodType) {
 
         std::vector<int> bestOrder = jobsOrder;
-        int** makespanTable = new int*[this->numJobs];
+        int** temp_best_makespanTable = new int*[this->numJobs];
         for (int i = 0; i < this->numJobs; ++i) {
-            makespanTable[i] = new int[this->numMachines];
+            temp_best_makespanTable[i] = new int[this->numMachines];
         }
-        computeMakespanTable(jobsOrder, makespanTable); 
-        int bestTCT = getTotalCompletionTime(jobsOrder, makespanTable);
+        computeMakespanTable(jobsOrder, temp_best_makespanTable); 
+        int bestTCT = getTotalCompletionTime(jobsOrder, temp_best_makespanTable);
         bool improved = true;
 
         
@@ -287,12 +288,14 @@
         for (int i = 0; i < this->numJobs; ++i) {
             neighborMakespanTable[i] = new int[this->numMachines];
         }
-    
+
+        std::vector<int> neighborOrder;
+        std::vector<int> currentOrder;
+        
         while (improved) {
             improved = false;
-            std::vector<int> currentOrder = bestOrder;
-            
-
+            currentOrder = bestOrder;
+    
             for (int i = 0; i < this->numJobs; ++i) {
                 for (int j = 0; j < this->numJobs; ++j) {
                     if (i == j) continue;
@@ -301,13 +304,13 @@
                         continue;
                     }
 
-                    std::vector<int> neighborOrder = currentOrder;
+                    neighborOrder = currentOrder;
 
                     // Apply the neighbor function to generate a new order
                     neighboor_function(neighborOrder, i, j);
                     
                     // Create a fresh copy of the makespan table for this neighbor
-                    copyMakespanTable(neighborMakespanTable, makespanTable, this->numJobs, this->numMachines);
+                    copyMakespanTable(neighborMakespanTable, temp_best_makespanTable, this->numJobs, this->numMachines);
                     // Update the makespan table for the neighbor order
                     updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
                     
@@ -317,23 +320,24 @@
                         bestTCT = neighborTCT;
                         bestOrder = neighborOrder;
                         improved = true;
-                        std::cout << "Improved makespan: " << bestTCT << std::endl;
+                        // std::cout << "Improved makespan: " << bestTCT << std::endl;
                         // Update the makespan table for the best order
-                        copyMakespanTable(makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
+                        copyMakespanTable(temp_best_makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
                     }
                 }
             }
         }
-        copyMakespanTable(this->makespanTable, makespanTable, this->numJobs, this->numMachines);
+        copyMakespanTable(this->makespanTable, temp_best_makespanTable, this->numJobs, this->numMachines);
         // Clean up
         for (int i = 0; i < this->numJobs; ++i) {
             delete[] neighborMakespanTable[i];
         }
         delete[] neighborMakespanTable;
+
         for (int i = 0; i < this->numJobs; ++i) {
-            delete[] makespanTable[i];
+            delete[] temp_best_makespanTable[i];
         }
-        delete[] makespanTable;
+        delete[] temp_best_makespanTable;
         return bestOrder;
     }
 
