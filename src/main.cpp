@@ -18,7 +18,7 @@ void handleProgramParameters(int argc, char* argv[], std::string& dataFileName, 
 
 int main(int argc, char* argv[]) {
 
-    
+    clock_t start = clock();
     std::string dataFileName, improvementType, neighborhoodType, initType;
     
     handleProgramParameters(argc, argv, dataFileName, improvementType, neighborhoodType, initType);
@@ -36,11 +36,15 @@ int main(int argc, char* argv[]) {
     } else {
         algo_result_jobs_order = pfsp.iterative_improvement_algorithm(improvementType, neighborhoodType, initType);
     }
+    clock_t end = clock();
+    double elapsed_time = double(end - start) / CLOCKS_PER_SEC;
+    std::cout << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
 
     // print_jobs_order(algo_result_jobs_order);
     int TotalCompletionTime = pfsp.getTotalCompletionTime(algo_result_jobs_order, pfsp.makespanTable);
     //print_jobs_order(algo_result_jobs_order);
     printf("%d", TotalCompletionTime);
+
 
     return 0;
 }

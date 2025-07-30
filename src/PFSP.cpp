@@ -220,9 +220,6 @@
         bool improved = true;
         
 
-
-        
-
         int** neighborMakespanTable = new int*[this->numJobs];
         for (int i = 0; i < this->numJobs; ++i) {
             neighborMakespanTable[i] = new int[this->numMachines];
@@ -245,19 +242,23 @@
                 neighboor_function(neighborOrder, i, j);
     
                 // Create a deep copy of the makespan table for this neighbor
-                copyMakespanTable(neighborMakespanTable, this->makespanTable, this->numJobs, this->numMachines);
+                //copyMakespanTable(neighborMakespanTable, this->makespanTable, this->numJobs, this->numMachines);
                 // Update the makespan table for the neighbor order
-                updateMakespanTable(neighborMakespanTable, neighborOrder, std::min(i, j));
+                updateMakespanTable(this->makespanTable, neighborOrder, std::min(i, j));
     
-                int neighborTCT = getTotalCompletionTime(neighborOrder, neighborMakespanTable);
-    
+                int neighborTCT = getTotalCompletionTime(neighborOrder, this->makespanTable);
+                
+                
                 if (neighborTCT < bestTCT) {
                     bestTCT = neighborTCT;
                     bestOrder = neighborOrder;
-                    copyMakespanTable(this->makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
+                    //copyMakespanTable(this->makespanTable, neighborMakespanTable, this->numJobs, this->numMachines);
                     improved = true;
-                    // std::cout << "Improved makespan: " << bestTCT << std::endl;
+                    //std::cout << "Improved makespan: " << bestTCT << std::endl;
                     break;
+                }
+                else{
+                    updateMakespanTable(this->makespanTable, bestOrder, std::min(i, j));
                 }
             }
         }
